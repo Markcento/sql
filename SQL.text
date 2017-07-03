@@ -1,0 +1,80 @@
+Database name: country
+
+What is the sum of surface area of the 10 biggest countries in the world? The 10 smallest?
+WITH cq AS (SELECT * FROM country ORDER BY population LIMIT 10 )SELECT sum(surfacearea) FROM cq;
+
+How big are the continents in term of area and population?
+ SELECT continent, sum(population) AS sum_population, sum(surfacearea) AS sum_surfacearea FROM country GROUP BY continent;
+
+ Which region has the highest average gnp?
+ SELECT continent, sum(population) AS sum_population, avg(gnp) AS sum_gnp FROM country GROUP BY continent ORDER BY sum_gnp DESC;
+
+Who is the most influential head of state measured by population?
+ SELECT headofstate, max(population) AS population_of_country FROM country GROUP BY headofstate ORDER BY population_of_country DESC;
+
+ Who is the most influential head of state measured by surface area?
+SELECT headofstate, surfacearea FROM country ORDER BY surfacearea DESC;
+
+What are the most common forms of government? (hint: use count(*))
+SELECT governmentform, count(*) AS type_of_govenment FROM country GROUP BY governmentform ORDER BY type_of_govenment DESC;
+
+What are the forms of government for the top ten countries by surface area?
+SELECT name, surfacearea, governmentform FROM country ORDER BY surfacearea DESC LIMIT 10;
+
+What are the forms of government for the top ten richest nations? (technically most productive)
+SELECT name, gnp, governmentform FROM country ORDER BY gnp DESC LIMIT 10;
+
+What are the forms of government for the top ten richest per capita nations?
+
+SELECT population, gnp, name, governmentform FROM country WHERE population > 0 and gnp > 0 ORDER BY (population/gnp) ASC LIMIT 10;
+
+Which countries are in the top 5% in terms of area?
+(hint: use a SELECT in a LIMIT clause)
+SELECT name, surfacearea
+FROM country
+ORDER BY surfacearea DESC
+LIMIT (SELECT count(*)*0.05 FROM country );
+
+What is the 3rd most common language spoken?
+SELECT language, count(*) AS lang_count FROM countrylanguage GROUP BY language ORDER BY lang_count DESC LIMIT 1 OFFSET 2;
+
+How many cities are in Chile?
+SELECT * FROM city WHERE countrycode LIKE 'CHL' ;
+
+What is the total population in China?
+ SELECT countrycode, sum(population) AS sum_population FROM city WHERE countrycode LIKE 'CHN' GROUP BY countrycode;
+
+How many countries are in North America?
+SELECT continent, count(name) AS total_countries FROM country WHERE continent LIKE 'North America' GROUP BY continent;
+
+Which countries gained their independence before 1963?
+SELECT name, indepyear FROM country WHERE indepyear < 1963;
+
+What is the total population of all continents?
+SELECT sum(population), continent
+FROM country
+GROUP BY continent;
+
+What is the average life expectancy for all continents?
+SELECT avg(lifeexpectancy), continent
+FROM country
+GROUP BY continent;
+
+Which countries have the letter z in the name? How many?
+SELECT name
+FROM country
+WHERE name LIKE '%z%'
+union
+SELECT name
+FROM country
+WHERE name LIKE 'Z%'
+
+What is the age of Jamaica
+SELECT (2017-indepyear), name FROM country WHERE name LIKE 'Jamaica'
+
+Are there any countries without an official language?
+SELECT countrycode FROM countrylanguage WHERE isofficial = 'f'
+EXCEPT
+SELECT countrycode FROM countrylanguage WHERE isofficial = 't';
+
+//verify SELECT * FROM countrylanguage WHERE countrycode LIKE 'TTO'
