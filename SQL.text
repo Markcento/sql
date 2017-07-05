@@ -73,8 +73,6 @@ What is the age of Jamaica
 SELECT (2017-indepyear), name FROM country WHERE name LIKE 'Jamaica'
 
 Are there any countries without an official language?
-SELECT countrycode FROM countrylanguage WHERE isofficial = 'f'
-EXCEPT
-SELECT countrycode FROM countrylanguage WHERE isofficial = 't';
+
 
 //verify SELECT * FROM countrylanguage WHERE countrycode LIKE 'TTO'

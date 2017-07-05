@@ -1,0 +1,288 @@
+What languages are spoken in the United States? (12) Brazil? (not Spanish...) Switzerland? (6)
+SELECT
+	c.name AS country,
+	cl.language AS language
+FROM
+	country c JOIN
+	countrylanguage cl ON c.code = cl.countrycode
+WHERE
+	c.code LIKE 'USA'
+ORDER BY
+	country
+
+  SELECT
+	c.name AS country,
+	cl.language AS language
+FROM
+	country c JOIN
+	countrylanguage cl ON c.code = cl.countrycode
+WHERE
+	c.code LIKE 'BRA'
+ORDER BY
+	country
+
+  SELECT
+	c.name AS country,
+	cl.language AS language
+FROM
+	country c JOIN
+	countrylanguage cl ON c.code = cl.countrycode
+WHERE
+	c.name LIKE 'Switzerland'
+ORDER BY
+	country
+
+What are the cities of the US? (274) India? (341)
+  SELECT
+	c.name AS country,
+	ct.name AS cities
+FROM
+	country c JOIN
+	city ct ON c.code = ct.countrycode
+WHERE
+	c.name LIKE 'United States'
+ORDER BY
+	cities
+
+
+What are the official languages of Switzerland? (4 languages)
+  SELECT
+	c.name AS country,
+	cl.language AS language,
+	cl.isofficial
+FROM
+	country c JOIN
+	countrylanguage cl ON c.code = cl.countrycode
+WHERE
+	cl.isofficial = 't' AND c.name LIKE 'Switzerland'
+ORDER BY
+	country
+
+  Which country or contries speak the most languages? (12 languages)
+  SELECT
+	c.name AS country,
+	count(cl.language) AS language_count
+FROM
+	country c JOIN
+	countrylanguage cl ON c.code = cl.countrycode
+
+GROUP BY
+	country
+ORDER BY
+	language_count DESC
+
+  Which country or contries have the most offficial languages? (4 languages)
+  SELECT
+	c.name AS country,
+	count(cl.isofficial) AS official_count
+FROM
+	country c JOIN
+	countrylanguage cl ON c.code = cl.countrycode
+WHERE
+	cl.isofficial = 't'
+GROUP BY
+	country
+ORDER BY
+	official_count DESC
+
+  Which languages are spoken in the ten largest (area) countries?
+  WITH
+  	top_ten AS (SELECT name, code, surfacearea FROM country ORDER BY surfacearea DESC LIMIT 10)
+  SELECT
+  	top_ten.name,
+  	cl.language
+  FROM
+  	top_ten JOIN
+  	countrylanguage cl ON top_ten.code = cl.countrycode
+  ORDER BY
+  	top_ten.surfacearea DESC
+
+What languages are spoken in the 20 poorest (GNP/ capita) countries in the world? (94 with GNP > 0)
+WITH
+	poorest AS (SELECT name, code, (population/gnp) AS per_capita FROM country WHERE gnp != 0 ORDER BY per_capita DESC LIMIT 20)
+SELECT
+	poorest.name,
+	poorest.per_capita,
+	cl.language
+FROM
+	poorest JOIN
+	countrylanguage cl ON poorest.code = cl.countrycode
+ORDER BY
+	poorest.per_capita
+
+
+What are the languages spoken in the countries with no official language?
+  WITH country_list AS (SELECT countrycode, language FROM countrylanguage WHERE isofficial = 'f'
+EXCEPT
+SELECT countrycode, language FROM countrylanguage WHERE isofficial = 't')
+
+SELECT
+	c.name,
+	country_list.language
+
+FROM
+	country_list JOIN
+	country c ON c.code = country_list.countrycode
+ORDER BY
+	country_list.countrycode
+
+
+Which countries have the highest proportion of official language speakers? The lowest?
+
+WITH country_list AS (SELECT countrycode, language, percentage FROM countrylanguage WHERE isofficial = 't' AND percentage > 0)
+
+SELECT
+ c.name,
+ country_list.language,
+ country_list.percentage
+
+FROM
+ country_list JOIN
+ country c ON c.code = country_list.countrycode
+ORDER BY
+ country_list.percentage
+
+
+
+ SELECT
+	sum(c.population/cl.percentage) AS total,
+	cl.language,
+	c.name
+
+FROM
+	country c JOIN
+	countrylanguage cl ON c.code = cl.countrycode
+WHERE
+	cl.percentage != 0
+GROUP BY
+	language, c.name
+ORDER BY
+	total DESC
+
+
+
+  What is the most spoken language in the world?
+  SELECT
+  	SUM(country.population*(cl.percentage/100)) AS count,
+  	cl.language
+  FROM countrylanguage cl JOIN country ON (cl.countrycode = country.code)
+  GROUP BY language
+  ORDER BY count DESC
+
+
+ What is the city population of the United States?
+  SELECT sum(population) FROM city WHERE countrycode LIKE 'USA'
+
+
+What is the population of the India? What is the city population of the India?
+SELECT sum(population) FROM country WHERE code LIKE 'IND'
+
+SELECT sum(population) FROM city WHERE countrycode LIKE 'IND'
+
+
+Which countries have no cities?
+SELECT c.name, ct.name
+FROM
+   country c LEFT JOIN
+   city ct ON c.code = ct.countrycode
+WHERE
+   ct.name IS NULL
+
+ORDER BY ct.name DESC
+
+
+What is the total population of cities where English is the offical language? Spanish?
+SELECT
+  	SUM(city.population) AS count,
+  	cl.language
+  FROM countrylanguage cl JOIN city ON (cl.countrycode = city.countrycode)
+
+WHERE
+   cl.language LIKE 'English' AND isofficial = 't'
+  GROUP BY language
+
+
+
+  Which countries have the 100 biggest cities in the world?
+  WITH big_city AS (SELECT population, name, countrycode FROM city ORDER BY population DESC LIMIT 100)
+
+  SELECT
+       big_city.name,
+       c.name,
+       big_city.population
+  FROM
+       big_city JOIN country c ON (c.code = big_city.countrycode)
+
+  ORDER BY
+       big_city.population DESC
+
+
+       What languages are spoken in the countries with the 100 biggest cities in the world?
+
+       WITH big_city AS (SELECT population, name, countrycode FROM city ORDER BY population DESC LIMIT 100)
+
+SELECT
+     big_city.name,
+     c.name,
+     big_city.population,
+     cl.language
+FROM
+     big_city JOIN country c ON (c.code = big_city.countrycode)
+     JOIN countrylanguage cl ON (cl.countrycode = c.code)
+
+ ORDER BY
+     big_city.population DESC
+
+
+What are the categories of the movies that have never sold?
+
+SELECT
+  inv.inventory_id,
+  cat.category_id,
+  ren.rental_date,
+  category.name
+FROM
+  rentals ren RIGHT JOIN
+  inventory inv USING (inventory_id)
+  JOIN film_categories cat USING (film_id)
+  JOIN category USING (category_id)
+WHERE
+  ren.inventory_id IS NULL
+
+  Which customers did not order a movie in the second half of 2004?
+  SELECT ren.rental_date, cust.customer_id, cust.first_name
+FROM rentals ren RIGHT JOIN
+  customers cust USING (customer_id)
+EXCEPT
+SELECT ren.rental_date, cust.customer_id, cust.first_name
+FROM rentals ren RIGHT JOIN
+  customers cust USING (customer_id)
+WHERE ren.rental_date > '2005-07-01 00:00:00'AND ren.rental_date < '2006-01-01 00:00:00'
+ORDER BY rental_date
+
+What was the total sales revenue in June, 2004? In California?
+SELECT sum(amount)
+FROM payments
+WHERE payment_date > '2007-03-01 00:00:00'AND payment_date < '2007-04-01 00:00:00'
+
+SELECT sum(p.amount), ad.district
+FROM payments p JOIN
+	customers cust USING (customer_id) JOIN
+	adresses ad USING (address_id)
+WHERE p.payment_date > '2007-03-01 00:00:00'AND p.payment_date < '2007-04-01 00:00:00' AND ad.district LIKE 'California'
+GROUP BY ad.district
+
+Which categories of movies appeared in the biggest single sale(s) on May 5th 2005?
+
+SELECT
+  category.name,
+  count(category.name) AS category
+FROM
+  rentals ren RIGHT JOIN
+  inventory inv USING (inventory_id)
+  JOIN film_categories cat USING (film_id)
+  JOIN category USING (category_id)
+WHERE
+  ren.rental_date > '2005-05-25 00:00:00' AND ren.rental_date < '2005-05-26 00:00:00'
+GROUP BY category.name
+ORDER BY category DESC
