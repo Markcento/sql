@@ -281,7 +281,7 @@ FROM
   rentals ren RIGHT JOIN
   inventory inv USING (inventory_id)
   JOIN film_categories cat USING (film_id)
-  JOIN category USING (category_id)
+  JOIN category USING (category_id)   
 WHERE
   ren.rental_date > '2005-05-25 00:00:00' AND ren.rental_date < '2005-05-26 00:00:00'
 GROUP BY category.name
